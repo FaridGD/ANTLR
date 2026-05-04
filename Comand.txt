@@ -1,0 +1,1 @@
+java -jar "C:\antlr\antlr-4.13.1-complete.jar" -Dlanguage=Cpp -visitor Example.g4 

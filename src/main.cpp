@@ -52,7 +52,9 @@ int main(int argc, char *argv[]) {
     // 5. Интерпретатор: обход дерева с вычислением
     try {
         ExampleInterpreter interpreter;
-        interpreter.visit(tree);
+        std::string result = std::any_cast<std::string>(interpreter.visit(tree));
+	std::cout << result;
+
     } catch (const std::exception &e) {
         std::cerr << "Runtime error: " << e.what() << std::endl;
         return 1;

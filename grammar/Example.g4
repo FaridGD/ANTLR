@@ -1,41 +1,88 @@
-// ============================================================================
-// Example.g4 — чистая грамматика (без встроенных действий).
-// Семантика реализуется отдельно через Visitor или Listener.
-//
-// Язык: простой калькулятор с переменными.
-//   print <expr> ;      — вывод значения выражения
-//   Выражения: +, -, *, /, скобки, целые числа, идентификаторы.
-// ============================================================================
 grammar Example;
 
-// Стартовое правило.
-// EOF гарантирует, что парсер прочитает ВЕСЬ вход.
-// Без EOF парсер может молча остановиться посередине файла при ошибке.
-program : statement+ EOF ;
+// =====================
+// Parser rules
+// =====================
 
-// Каждая альтернатива помечена меткой (#).
-// Метки порождают отдельные классы контекста и отдельные visit-методы.
-// Если пометили одну альтернативу — нужно пометить ВСЕ.
-statement
-    : 'print' expr ';'    # printStmt
+program : block* EOF ;
+
+block
+    : header
+    | list
+    | quote
+    | paragraph
+    | fencedCodeBlock
+    | indentedCodeBlock
+    | emptyLine
     ;
 
-// Выражения с приоритетами: порядок альтернатив = приоритет.
-// Первая альтернатива — высший приоритет (умножение/деление).
-// Левая рекурсия обрабатывается ANTLR4 автоматически.
-expr
-    : expr ('*'|'/') expr  # MulDiv
-    | expr ('+'|'-') expr  # AddSub
-    | INT                   # Integer
-    | '(' expr ')'         # Parens
+header : HASHES WS* inline+ NEWLINE ;
+
+list : listItem+ # UnorderedList ;
+listItem : DASH WS+ (checkbox WS+)? inline+ NEWLINE ;
+
+checkbox
+    : LBRACK (WS | 'x' | 'X') RBRACK
     ;
 
-// === Лексерные правила (ЗАГЛАВНЫЕ буквы) ===
-// Строковые литералы 'print' в парсерных правилах — implicit tokens.
-// ANTLR4 автоматически ставит их с приоритетом выше ID,
-// поэтому 'print' не будет распознано как идентификатор.
+quote : (GT WS? inline+ NEWLINE)+ ;
 
-ID      : [a-zA-Z_] [a-zA-Z_0-9]* ;
-INT     : [0-9]+ ;
-WS      : [ \t\r\n]+ -> skip ;
-COMMENT : '//' ~[\r\n]* -> channel(HIDDEN) ;
+paragraph : inline+ NEWLINE ;
+
+fencedCodeBlock : FENCED_CODE NEWLINE? ;
+
+indentedCodeBlock : INDENTED_CODE+ ;
+
+inline
+    : image       # InlineImage
+    | link        # InlineLink
+    | INLINE_CODE # InlineCodeAlt
+    | bold        # InlineBold
+    | italic      # InlineItalic
+    | DOUBLESTAR  # InlineDoubleStar
+    | STAR        # InlineStar
+    | LPAREN      # InlineLParen
+    | RPAREN      # InlineRParen
+    | TEXT        # InlineText
+    | WS          # InlineWs
+    | HASHES      # InlineHashes
+    | DASH        # InlineDash
+    | GT          # InlineGt
+    ;
+
+link : LBRACK inline+ RBRACK LPAREN urlContent RPAREN ;
+image : EXCL LBRACK inline+ RBRACK LPAREN urlContent RPAREN ;
+bold : DOUBLESTAR (italic | image | link | INLINE_CODE | STAR | LPAREN | RPAREN | TEXT | WS | HASHES | DASH | GT)* DOUBLESTAR ;
+italic : STAR (bold | image | link | INLINE_CODE | DOUBLESTAR | LPAREN | RPAREN | TEXT | WS | HASHES | DASH | GT)* STAR ;
+
+urlContent : (TEXT | DASH | HASHES | WS | GT)* ;
+
+emptyLine : NEWLINE ;
+
+// =====================
+// Lexer rules
+// =====================
+
+FENCED_CODE : '```' ( . | '\n' | '\r' )*? '```' ;
+
+// Inline стили
+INLINE_CODE : '`' ~[`\r\n]+? '`' ;
+DOUBLESTAR  : '**' ;
+STAR        : '*' ;
+
+INDENTED_CODE : ('    ' | '\t') ~[\r\n]* NEWLINE ;
+
+LBRACK : '[' ;
+RBRACK : ']' ;
+LPAREN : '(' ;
+RPAREN : ')' ;
+EXCL   : '!' ;
+GT     : '>' ;
+
+HASHES : '#'+ ;
+DASH   : '-' ;
+
+NEWLINE : '\r'? '\n' ;
+WS      : [ \t]+ ;
+
+TEXT : ~[#!*`[\]()>\r\n \t\-]+ ;
