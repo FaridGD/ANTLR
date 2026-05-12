@@ -14,7 +14,7 @@
 - [ ] Задача с **важным** примечанием и [ссылкой](http://google.com)
 
 Это ссылка: [GitHub](https://github.com)
-Это картинка: ![Alt-текст для логотипа](https://via.placeholder.com/150)
+Это картинка: ![Alt-текст для логотипа](image.png)
 
 ```cpp
 #include <iostream>

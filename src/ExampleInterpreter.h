@@ -164,8 +164,6 @@ public:
         return "<code>" + escapeHtml(text) + "</code>";
     }
 
-    // --- Списки и вспомогательные правила ---
-
     std::any visitEmptyLine(ExampleParser::EmptyLineContext *) override {
         return std::string("");
     }
