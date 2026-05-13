@@ -22,6 +22,11 @@
 cmake --build build
 ```
 В папке ```./build/``` будет создан исполняемый файл ```main```
+Использование и вывод в командную строку:
+```
+./build/main test.md
+```
+Создать/перезаписать HTML файл:
 ```
 ./build/main test.md -o test.html
 ```
