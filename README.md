@@ -71,7 +71,7 @@ HTML:
 ```
 HTML:
 ```
-<img src="src\image.png" alt="Alt-зачем">
+<img src="src\image.png" alt="Alt-Изображение не найдено">
 ```
 8. Чекбоксы
 ```
